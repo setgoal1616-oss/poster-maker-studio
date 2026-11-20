@@ -18,7 +18,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.6}input[type=color]{widt
 input[type=file]{width:100%;font-size:13px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:700}.download{width:100%;background:#17120b;color:white;font-size:15px}.reset{width:100%;margin-top:8px;background:#eee;color:#222}
 .preview-wrap{background:#ddd;border-radius:24px;padding:22px;display:flex;justify-content:center;overflow:auto}
-.poster{position:relative;width:min(100%,440px);aspect-ratio:9/16;overflow:hidden;color:#17120b;background:#ead7a9;background-size:cover;background-position:center;box-shadow:0 3px 18px #0002;touch-action:pan-y}
+.poster{position:relative;width:min(100%,440px);aspect-ratio:9/16;overflow:hidden;color:#17120b;background:#ead7a9;background-size:cover;background-position:center;box-shadow:0 3px 18px #0002;touch-action:none}
 .poster-inner{position:absolute;inset:0;padding:8.5%;overflow:hidden}
 .text-layer{position:absolute;left:8.5%;width:83%;cursor:move;touch-action:none;user-select:none;white-space:pre-wrap;overflow-wrap:anywhere}
 #previewHeading{top:8.5%;margin:0;padding:0 0 9px;border-bottom:2px solid currentColor;text-align:center;font-size:32px;line-height:1.45;font-weight:800}
@@ -31,11 +31,36 @@ button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:7
 .lock-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0 12px}.lock-btn{background:#eef2f7;border:1px solid #ccd4df;color:#263445;padding:8px 11px;font-size:12px}.lock-btn.locked{background:#242424;color:#fff;border-color:#242424}.action-row{display:flex;gap:8px;margin-bottom:12px}.action-row button{flex:1;background:#eee}.action-row button:disabled{opacity:.4;cursor:not-allowed}
 .hint{font-size:12px;color:#666;line-height:1.5;margin-top:9px}.section-title{font-size:14px;font-weight:800;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid #eee}
 @media(max-width:760px){.app{grid-template-columns:1fr}.preview-wrap{padding:22px 16px;border-radius:24px}.poster{width:min(100%,390px)}}
+
+.login-screen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#111827,#263449);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{width:min(100%,380px);background:#fff;border-radius:16px;padding:26px;box-shadow:0 15px 50px #0005}
+.login-card h2{margin:0 0 8px;text-align:center;font-size:23px;color:#182235}
+.login-card p{margin:0 0 22px;text-align:center;color:#667085;font-size:13px}
+.login-card label{margin:12px 0 6px}
+.login-card input{width:100%;border:1px solid #ccd2dc;border-radius:8px;padding:12px;font-size:15px}
+.login-card button{width:100%;margin-top:18px;background:#182235;color:white;padding:12px}
+.login-error{min-height:18px;margin-top:10px;color:#c62828;font-size:13px;text-align:center}
+#mainApp[hidden]{display:none}
+
 </style>
 </head>
 <body>
+
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <h2>বাংলা Text Poster Maker</h2>
+    <p>Continue করতে User ID ও Password দিন</p>
+    <label for="loginUser">User ID</label>
+    <input id="loginUser" type="text" autocomplete="username" placeholder="Enter User ID" required>
+    <label for="loginPass">Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="Enter Password" required>
+    <button type="submit">Login</button>
+    <div class="login-error" id="loginError" role="alert"></div>
+  </form>
+</div>
+
 <header><h1>বাংলা Text Poster Maker</h1><p>Heading ও Main Text Drag, Resize এবং PNG Export করুন</p></header>
-<main class="app">
+<main class="app" id="mainApp" hidden>
 <section class="panel">
   <div class="action-row"><button id="undoBtn" disabled>↶ Undo</button><button id="redoBtn" disabled>↷ Redo</button></div>
   <div class="field"><div class="lock-row"><label for="heading" style="margin:0">Heading Text</label><button type="button" class="lock-btn" id="headingLock">🔓 Unlocked</button></div><textarea id="heading" rows="2">কোন দেবতা কাকে বিবাহ করেছিলেন?</textarea></div>
@@ -80,7 +105,7 @@ button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:7
   <div class="field"><label for="bgZoom">Background Zoom: <span id="bgZoomValue">100</span>%</label><div class="range-row"><input id="bgZoom" type="range" min="100" max="300" value="100"><input id="bgZoomNumber" type="number" min="100" max="300" value="100" style="width:76px" aria-label="Background zoom percentage"></div></div>
   <div class="field"><label for="bgX">Background Horizontal Position: <span id="bgXValue">50</span>%</label><input id="bgX" type="range" min="0" max="100" value="50"></div>
   <div class="field"><label for="bgY">Background Vertical Position: <span id="bgYValue">50</span>%</label><input id="bgY" type="range" min="0" max="100" value="50"></div>
-  <p class="hint">Background Unlock থাকলে Preview-এর খালি জায়গায় Drag করে Background Position পরিবর্তন করুন।</p>
+  <p class="hint">Background Unlocked থাকলে Live Preview-এর খালি জায়গায় আঙুল বা মাউস দিয়ে Drag করে Background Position পরিবর্তন করুন।</p>
   <div class="field"><label for="bgUpload">Upload Your Own Background</label><input id="bgUpload" type="file" accept="image/*"></div>
   <button class="download" id="downloadBtn">Download Poster PNG</button><button class="reset" id="resetBtn">Reset</button>
 </section>
@@ -97,6 +122,24 @@ button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:7
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+
+// LOGIN SETTINGS: পরে User ID ও Password বদলাতে নিচের দুইটি value edit করুন।
+const DEFAULT_USER_ID = "admin";
+const DEFAULT_PASSWORD = "1234";
+
+const loginForm = document.getElementById("loginForm");
+loginForm.addEventListener("submit", function(event) {
+  event.preventDefault();
+  const enteredId = document.getElementById("loginUser").value.trim();
+  const enteredPassword = document.getElementById("loginPass").value;
+  if (enteredId === DEFAULT_USER_ID && enteredPassword === DEFAULT_PASSWORD) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainApp").hidden = false;
+  } else {
+    document.getElementById("loginError").textContent = "ভুল User ID অথবা Password। আবার চেষ্টা করুন।";
+  }
+});
+
 const $=id=>document.getElementById(id), poster=$('poster');
 let uploadedBackground='',selectedDefaultBackground='',selected=null;
 const bgState={zoom:100,x:50,y:50,locked:false};
