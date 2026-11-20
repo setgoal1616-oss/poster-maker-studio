@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>বাংলা Text Poster Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Baloo+Da+2:wght@400;500;600;700;800&family=Anek+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f2f4;color:#222;font-family:Arial,sans-serif}
+header{padding:16px;background:#242424;color:#fff;text-align:center}header h1{margin:0;font-size:21px}header p{margin:6px 0 0;color:#ccc;font-size:13px}
+.app{max-width:1180px;margin:18px auto;padding:0 12px;display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+.panel{background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 12px #0001}
+.field{margin-bottom:13px}.bg-lock{background:#eef2f7;border:1px solid #ccd4df;color:#263445;padding:8px 11px;font-size:12px}.bg-lock.locked{background:#242424;color:#fff;border-color:#242424}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input[type=text],textarea,select,input[type=number]{width:100%;border:1px solid #ccc;border-radius:7px;padding:10px;font:14px Arial,sans-serif;background:#fff}
+textarea{min-height:110px;resize:vertical;line-height:1.6}input[type=color]{width:100%;height:38px;border:1px solid #ccc;border-radius:7px;padding:3px;background:white}
+input[type=file]{width:100%;font-size:13px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:700}.download{width:100%;background:#17120b;color:white;font-size:15px}.reset{width:100%;margin-top:8px;background:#eee;color:#222}
+.preview-wrap{background:#ddd;border-radius:24px;padding:22px;display:flex;justify-content:center;overflow:auto}
+.poster{position:relative;width:min(100%,440px);aspect-ratio:9/16;overflow:hidden;color:#17120b;background:#ead7a9;background-size:cover;background-position:center;box-shadow:0 3px 18px #0002;touch-action:pan-y}
+.poster-inner{position:absolute;inset:0;padding:8.5%;overflow:hidden}
+.text-layer{position:absolute;left:8.5%;width:83%;cursor:move;touch-action:none;user-select:none;white-space:pre-wrap;overflow-wrap:anywhere}
+#previewHeading{top:8.5%;margin:0;padding:0 0 9px;border-bottom:2px solid currentColor;text-align:center;font-size:32px;line-height:1.45;font-weight:800}
+#previewBody{top:25%;font-size:18px;line-height:1.9;text-align:left}
+.text-layer.selected{outline:1.5px dashed #1677ff;outline-offset:5px}
+.resize-handle{display:none;position:absolute;width:14px;height:14px;background:#1677ff;border:2px solid white;border-radius:50%;right:-8px;bottom:-8px;cursor:nwse-resize;touch-action:none}
+.text-layer.selected .resize-handle{display:block}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap}.toggle{background:#f0f0f0;border:1px solid #ccc;color:#222;min-width:42px}.toggle.active{background:#242424;color:white}
+.range-row{display:flex;align-items:center;gap:9px}.range-row input{flex:1;min-width:0}.range-value{min-width:34px;text-align:right;font-size:13px;font-weight:700}
+.lock-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0 12px}.lock-btn{background:#eef2f7;border:1px solid #ccd4df;color:#263445;padding:8px 11px;font-size:12px}.lock-btn.locked{background:#242424;color:#fff;border-color:#242424}.action-row{display:flex;gap:8px;margin-bottom:12px}.action-row button{flex:1;background:#eee}.action-row button:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:12px;color:#666;line-height:1.5;margin-top:9px}.section-title{font-size:14px;font-weight:800;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid #eee}
+@media(max-width:760px){.app{grid-template-columns:1fr}.preview-wrap{padding:22px 16px;border-radius:24px}.poster{width:min(100%,390px)}}
+</style>
+</head>
+<body>
+<header><h1>বাংলা Text Poster Maker</h1><p>Heading ও Main Text Drag, Resize এবং PNG Export করুন</p></header>
+<main class="app">
+<section class="panel">
+  <div class="action-row"><button id="undoBtn" disabled>↶ Undo</button><button id="redoBtn" disabled>↷ Redo</button></div>
+  <div class="field"><div class="lock-row"><label for="heading" style="margin:0">Heading Text</label><button type="button" class="lock-btn" id="headingLock">🔓 Unlocked</button></div><textarea id="heading" rows="2">কোন দেবতা কাকে বিবাহ করেছিলেন?</textarea></div>
+  <div class="field"><div class="lock-row"><label for="bodyText" style="margin:0">Main Text</label><button type="button" class="lock-btn" id="bodyLock">🔓 Unlocked</button></div><textarea id="bodyText">১) ব্রহ্মার পত্নী — সরস্বতী।
+
+২) ভগবান বিষ্ণুর পত্নী — মা লক্ষ্মী।
+
+৩) মহাদেবের পত্নী — পার্বতী (উমা, দুর্গা, কালী)।
+
+৪) শ্রীরামচন্দ্রের পত্নী — সীতা।</textarea></div>
+
+  <div class="section-title">Heading Settings</div>
+  <div class="field"><label for="headingFont">Heading Font</label><select id="headingFont">
+    <option value="'Noto Serif Bengali',serif">Noto Serif Bengali</option><option value="'Noto Sans Bengali',sans-serif">Noto Sans Bengali</option><option value="'Hind Siliguri',sans-serif">Hind Siliguri</option><option value="'Baloo Da 2',cursive">Baloo Da 2</option><option value="'Anek Bengali',sans-serif">Anek Bengali</option>
+  </select></div>
+  <div class="two"><div class="field"><label for="headingColor">Heading Colour</label><input id="headingColor" type="color" value="#17120b"></div><div class="field"><label>Heading Style</label><div class="toolbar"><button class="toggle active" id="headingBold"><b>B</b></button><button class="toggle" id="headingItalic"><i>I</i></button><button class="toggle active" id="headingUnderline"><u>U</u></button></div></div></div>
+  <div class="field"><label for="headingSize">Heading Size</label><div class="range-row"><input id="headingSize" type="range" min="12" max="80" value="32"><input id="headingSizeNumber" type="number" min="12" max="80" value="32" aria-label="Heading font size in pixels" style="width:76px"></div></div>
+
+  <div class="section-title">Main Text Settings</div>
+  <div class="field"><label for="bodyFont">Main Text Font</label><select id="bodyFont">
+    <option value="'Noto Serif Bengali',serif">Noto Serif Bengali</option><option value="'Noto Sans Bengali',sans-serif">Noto Sans Bengali</option><option value="'Hind Siliguri',sans-serif">Hind Siliguri</option><option value="'Baloo Da 2',cursive">Baloo Da 2</option><option value="'Anek Bengali',sans-serif">Anek Bengali</option>
+  </select></div>
+  <div class="two"><div class="field"><label for="bodyColor">Main Text Colour</label><input id="bodyColor" type="color" value="#17120b"></div><div class="field"><label>Main Text Style</label><div class="toolbar"><button class="toggle" id="bodyBold"><b>B</b></button><button class="toggle" id="bodyItalic"><i>I</i></button><button class="toggle" id="bodyUnderline"><u>U</u></button></div></div></div>
+  <div class="field"><label for="bodySize">Main Text Size</label><div class="range-row"><input id="bodySize" type="range" min="8" max="48" value="18"><input id="bodySizeNumber" type="number" min="8" max="48" value="18" aria-label="Main text font size in pixels" style="width:76px"></div></div>
+  <div class="field"><label for="textAlign">Main Text Alignment</label><select id="textAlign"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option></select></div>
+
+  <div class="section-title">Poster Background</div>
+  <div class="two"><div class="field"><label for="ratio">Poster Ratio</label><select id="ratio"><option value="9/16">9:16 Shorts</option><option value="3/4">3:4</option><option value="1/1">1:1 Square</option><option value="4/5">4:5</option></select></div><div class="field"><label for="paper">Background Preset</label><select id="paper"><option value="#ead7a9">Vintage Paper</option><option value="#f4e8c9">Light Parchment</option><option value="#fffaf0">Cream</option><option value="#ffffff">White</option><option value="#e8dfcf">Warm Beige</option><option value="#171717">Dark</option></select></div></div>
+  <div class="field"><label for="customColor">Custom Background Colour</label><input id="customColor" type="color" value="#ead7a9"></div>
+  <div class="field"><label for="defaultBackground">Built-in Background Designs</label><select id="defaultBackground">
+    <option value="none">No design — use background colour</option>
+    <option value="parchment">Classic Parchment</option>
+    <option value="warm-paper">Warm Paper Texture</option>
+    <option value="cream-glow">Soft Cream Glow</option>
+    <option value="pink-blush">Pastel Pink</option>
+    <option value="mint">Mint Green</option>
+    <option value="sky">Sky Blue</option>
+    <option value="lavender">Lavender</option>
+    <option value="gold">Royal Gold</option>
+    <option value="floral">Soft Floral Dots</option>
+    <option value="royal-night">Royal Night</option>
+  </select></div>
+  <div class="section-title">Background Position & Zoom</div>
+  <div class="lock-row"><span style="font-size:13px;font-weight:700">Background Movement</span><button type="button" class="bg-lock" id="backgroundLock">🔓 Unlocked</button></div>
+  <div class="field"><label for="bgZoom">Background Zoom: <span id="bgZoomValue">100</span>%</label><div class="range-row"><input id="bgZoom" type="range" min="100" max="300" value="100"><input id="bgZoomNumber" type="number" min="100" max="300" value="100" style="width:76px" aria-label="Background zoom percentage"></div></div>
+  <div class="field"><label for="bgX">Background Horizontal Position: <span id="bgXValue">50</span>%</label><input id="bgX" type="range" min="0" max="100" value="50"></div>
+  <div class="field"><label for="bgY">Background Vertical Position: <span id="bgYValue">50</span>%</label><input id="bgY" type="range" min="0" max="100" value="50"></div>
+  <p class="hint">Background Unlock থাকলে Preview-এর খালি জায়গায় Drag করে Background Position পরিবর্তন করুন।</p>
+  <div class="field"><label for="bgUpload">Upload Your Own Background</label><input id="bgUpload" type="file" accept="image/*"></div>
+  <button class="download" id="downloadBtn">Download Poster PNG</button><button class="reset" id="resetBtn">Reset</button>
+</section>
+<section>
+  <div class="preview-wrap"><div class="poster" id="poster"><div class="poster-inner">
+    <h2 class="text-layer" id="previewHeading">কোন দেবতা কাকে বিবাহ করেছিলেন?<span class="resize-handle"></span></h2>
+    <div class="text-layer" id="previewBody">১) ব্রহ্মার পত্নী — সরস্বতী।
+
+২) ভগবান বিষ্ণুর পত্নী — মা লক্ষ্মী।
+
+৩) মহাদেবের পত্নী — পার্বতী (উমা, দুর্গা, কালী)।
+
+৪) শ্রীরামচন্দ্রের পত্নী — সীতা।<span class="resize-handle"></span></div>
+  </div></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const $=id=>document.getElementById(id), poster=$('poster');
+let uploadedBackground='',selectedDefaultBackground='',selected=null;
+const bgState={zoom:100,x:50,y:50,locked:false};
+let bgDrag=null;
+const styles={heading:{bold:true,italic:false,underline:true},body:{bold:false,italic:false,underline:false}};
+const defaults={heading:{x:8.5,y:8.5,w:83},body:{x:8.5,y:25,w:83}};
+const positions={heading:{...defaults.heading},body:{...defaults.body}};
+const locks={heading:false,body:false};
+const defaultBackgrounds={
+ parchment:'radial-gradient(ellipse at 18% 12%, rgba(255,255,255,.42), transparent 42%), radial-gradient(ellipse at 85% 88%, rgba(160,112,45,.10), transparent 45%), linear-gradient(135deg,#f5e7c3,#e8d3a2)',
+ 'warm-paper':'repeating-linear-gradient(0deg,rgba(120,85,40,.035) 0px,rgba(120,85,40,.035) 1px,transparent 1px,transparent 5px),linear-gradient(135deg,#f3dfb5,#e9d0a0)',
+ 'cream-glow':'radial-gradient(circle at 50% 18%,#fffef7 0,#fff9e9 48%,#eee2c8 100%)',
+ 'pink-blush':'radial-gradient(circle at 15% 15%,rgba(255,255,255,.9),transparent 40%),linear-gradient(145deg,#ffe7ec,#f4cbd6)',
+ mint:'radial-gradient(circle at 85% 12%,rgba(255,255,255,.8),transparent 38%),linear-gradient(145deg,#e5f5e9,#bcdcc9)',
+ sky:'radial-gradient(circle at 15% 15%,rgba(255,255,255,.9),transparent 42%),linear-gradient(145deg,#e4f3ff,#b8d9ef)',
+ lavender:'radial-gradient(circle at 80% 18%,rgba(255,255,255,.75),transparent 40%),linear-gradient(145deg,#f0eaff,#d4c9ed)',
+ gold:'radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.5),transparent 55%),linear-gradient(135deg,#f5e3a9,#cba85d)',
+ floral:'radial-gradient(circle at 12px 12px,rgba(177,117,130,.13) 2px,transparent 3px),radial-gradient(circle at 32px 32px,rgba(177,117,130,.10) 2px,transparent 3px),linear-gradient(145deg,#fff7ef,#f2e2d6)',
+ 'royal-night':'radial-gradient(ellipse at 50% 0%,rgba(90,115,190,.45),transparent 60%),linear-gradient(145deg,#18213f,#080d1d)'
+};
+let history=[],historyIndex=-1,restoring=false,drag=null;
+function snapshot(){
+ const s={heading:$('heading').value,bodyText:$('bodyText').value,headingSize:$('headingSize').value,bodySize:$('bodySize').value,headingFont:$('headingFont').value,bodyFont:$('bodyFont').value,headingColor:$('headingColor').value,bodyColor:$('bodyColor').value,textAlign:$('textAlign').value,ratio:$('ratio').value,customColor:$('customColor').value,paper:$('paper').value,defaultBackground:$('defaultBackground').value,uploadedBackground,selectedDefaultBackground,styles:JSON.parse(JSON.stringify(styles)),positions:JSON.parse(JSON.stringify(positions)),locks:{...locks},bgState:{...bgState}};
+ return JSON.stringify(s);
+}
+function saveHistory(){
+ if(restoring)return;const s=snapshot();if(history[historyIndex]===s)return;
+ history=history.slice(0,historyIndex+1);history.push(s);if(history.length>80)history.shift();historyIndex=history.length-1;updateHistoryButtons();
+}
+function updateHistoryButtons(){$('undoBtn').disabled=historyIndex<=0;$('redoBtn').disabled=historyIndex>=history.length-1}
+function restore(s){
+ restoring=true;const v=JSON.parse(s);
+ ['heading','bodyText','headingSize','bodySize','headingFont','bodyFont','headingColor','bodyColor','textAlign','ratio','customColor','paper','defaultBackground'].forEach(k=>$(k).value=v[k]);
+ uploadedBackground=v.uploadedBackground;selectedDefaultBackground=v.selectedDefaultBackground;
+ Object.assign(styles,v.styles);Object.assign(positions,v.positions);
+ ['headingBold','headingItalic','headingUnderline','bodyBold','bodyItalic','bodyUnderline'].forEach(id=>$(id).classList.toggle('active',styles[id.startsWith('heading')?'heading':'body'][id.replace(/^(heading|body)/,'').toLowerCase()]));
+ updatePreview();restoring=false;updateHistoryButtons();
+}
+$('undoBtn').onclick=()=>{if(historyIndex>0){historyIndex--;restore(history[historyIndex])}};
+$('redoBtn').onclick=()=>{if(historyIndex<history.length-1){historyIndex++;restore(history[historyIndex])}};
+function updateBackgroundLock(){
+ const btn=$('backgroundLock');btn.textContent=bgState.locked?'🔒 Locked':'🔓 Unlocked';btn.classList.toggle('locked',bgState.locked);btn.setAttribute('aria-pressed',String(bgState.locked));
+}
+$('backgroundLock').addEventListener('click',()=>{bgState.locked=!bgState.locked;bgDrag=null;updateBackgroundLock();saveHistory()});
+function updateLockButtons(){
+ ['heading','body'].forEach(part=>{
+  const btn=$(part==='heading'?'headingLock':'bodyLock');
+  btn.textContent=locks[part]?'🔒 Locked':'🔓 Unlocked';
+  btn.classList.toggle('locked',locks[part]);
+  btn.setAttribute('aria-pressed',String(locks[part]));
+ });
+}
+function toggleLock(part){
+ locks[part]=!locks[part];
+ if(locks[part]&&drag&&drag.part===part)drag=null;
+ updateLockButtons();updateBackgroundLock();updatePreview();saveHistory();
+}
+$('headingLock').addEventListener('click',()=>toggleLock('heading'));
+$('bodyLock').addEventListener('click',()=>toggleLock('body'));
+function updatePreview(syncSizeInputs=true){
+ const h=$('previewHeading'),b=$('previewBody');
+ h.firstChild ? h.firstChild.textContent=$('heading').value||'আপনার শিরোনাম' : h.textContent=$('heading').value;
+ b.firstChild ? b.firstChild.textContent=$('bodyText').value||'আপনার মূল লেখা লিখুন' : b.textContent=$('bodyText').value;
+ h.style.fontSize=$('headingSize').value+'px';b.style.fontSize=$('bodySize').value+'px';
+ if(syncSizeInputs){
+  $('headingSizeNumber').value=$('headingSize').value;
+  $('bodySizeNumber').value=$('bodySize').value;
+ }
+ h.style.fontFamily=$('headingFont').value;b.style.fontFamily=$('bodyFont').value;
+ h.style.color=$('headingColor').value;b.style.color=$('bodyColor').value;
+ h.style.fontWeight=styles.heading.bold?'800':'400';b.style.fontWeight=styles.body.bold?'700':'400';
+ h.style.fontStyle=styles.heading.italic?'italic':'normal';b.style.fontStyle=styles.body.italic?'italic':'normal';
+ h.style.textDecoration=styles.heading.underline?'underline':'none';b.style.textDecoration=styles.body.underline?'underline':'none';
+ b.style.textAlign=$('textAlign').value;poster.style.aspectRatio=$('ratio').value;poster.style.backgroundColor=$('customColor').value;
+ const bg=uploadedBackground || (selectedDefaultBackground ? defaultBackgrounds[selectedDefaultBackground] : '');
+ poster.style.backgroundImage=bg||'none';
+ poster.style.backgroundSize=bgState.zoom+'% auto';
+ poster.style.backgroundPosition=bgState.x+'% '+bgState.y+'%';
+ $('bgZoomValue').textContent=$('bgZoomNumber').value=bgState.zoom;
+ $('bgXValue').textContent=bgState.x;$('bgYValue').textContent=bgState.y;
+ [h,b].forEach((el,i)=>{const p=positions[i?'body':'heading'];el.style.left=p.x+'%';el.style.top=p.y+'%';el.style.width=p.w+'%';});
+ h.querySelector('.resize-handle')||h.insertAdjacentHTML('beforeend','<span class="resize-handle"></span>');
+ b.querySelector('.resize-handle')||b.insertAdjacentHTML('beforeend','<span class="resize-handle"></span>');
+ h.classList.toggle('selected',selected==='heading');b.classList.toggle('selected',selected==='body');
+}
+function bindToggle(id,part,prop){$(id).addEventListener('click',()=>{styles[part][prop]=!styles[part][prop];$(id).classList.toggle('active',styles[part][prop]);updatePreview();saveHistory()})}
+bindToggle('headingBold','heading','bold');bindToggle('headingItalic','heading','italic');bindToggle('headingUnderline','heading','underline');
+bindToggle('bodyBold','body','bold');bindToggle('bodyItalic','body','italic');bindToggle('bodyUnderline','body','underline');
+['heading','bodyText','headingSize','bodySize','headingFont','bodyFont','headingColor','bodyColor','textAlign','ratio','customColor'].forEach(id=>$(id).addEventListener('input',()=>{updatePreview();saveHistory()}));
+['bgZoom','bgX','bgY'].forEach(id=>$(id).addEventListener('input',()=>{
+ bgState.zoom=Number($('bgZoom').value);bgState.x=Number($('bgX').value);bgState.y=Number($('bgY').value);
+ updatePreview();saveHistory();
+}));
+$('bgZoomNumber').addEventListener('input',()=>{
+ const v=Number($('bgZoomNumber').value);if(!Number.isFinite(v)||v<100||v>300)return;
+ bgState.zoom=v;$('bgZoom').value=v;updatePreview();saveHistory();
+});
+$('bgZoomNumber').addEventListener('change',()=>{
+ bgState.zoom=Math.max(100,Math.min(300,Math.round(Number($('bgZoomNumber').value)||100)));
+ $('bgZoom').value=bgState.zoom;updatePreview();saveHistory();
+});
+// Number fields: allow multi-digit typing without resetting the field after each keystroke.
+function bindSizeNumber(numberId,sliderId,min,max){
+ const number=$(numberId),slider=$(sliderId);
+ number.addEventListener('input',()=>{
+  if(number.value.trim()==='')return;
+  const v=Number(number.value);
+  if(!Number.isFinite(v)||v<min||v>max)return;
+  slider.value=v;
+  updatePreview(false);
+  saveHistory();
+ });
+ const commit=()=>{
+  let v=Number(number.value);
+  if(!Number.isFinite(v))v=Number(slider.value);
+  v=Math.max(min,Math.min(max,Math.round(v)));
+  number.value=v;slider.value=v;
+  updatePreview();saveHistory();
+ };
+ number.addEventListener('change',commit);
+ number.addEventListener('blur',commit);
+ slider.addEventListener('input',()=>{number.value=slider.value;});
+}
+bindSizeNumber('headingSizeNumber','headingSize',12,80);
+bindSizeNumber('bodySizeNumber','bodySize',8,48);
+$('paper').addEventListener('change',()=>{$('customColor').value=$('paper').value;uploadedBackground='';selectedDefaultBackground='';$('defaultBackground').value='none';updatePreview();saveHistory()});
+$('customColor').addEventListener('input',()=>{uploadedBackground='';selectedDefaultBackground='';$('defaultBackground').value='none';updatePreview();saveHistory()});
+$('defaultBackground').addEventListener('change',()=>{selectedDefaultBackground=$('defaultBackground').value==='none'?'':$('defaultBackground').value;uploadedBackground='';$('bgUpload').value='';updatePreview();saveHistory()});
+$('bgUpload').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{uploadedBackground=ev.target.result;selectedDefaultBackground='';$('defaultBackground').value='none';updatePreview();saveHistory()};r.readAsDataURL(f)});
+function point(e){const r=poster.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100}}
+poster.addEventListener('pointerdown',e=>{
+ if(bgState.locked||e.target.closest('.text-layer'))return;
+ const p=point(e);bgDrag={start:p,origin:{x:bgState.x,y:bgState.y}};
+ poster.setPointerCapture(e.pointerId);e.preventDefault();
+});
+poster.addEventListener('pointermove',e=>{
+ if(!bgDrag)return;const p=point(e);
+ bgState.x=Math.max(0,Math.min(100,bgDrag.origin.x-(p.x-bgDrag.start.x)*1.5));
+ bgState.y=Math.max(0,Math.min(100,bgDrag.origin.y-(p.y-bgDrag.start.y)*1.5));
+ $('bgX').value=Math.round(bgState.x);$('bgY').value=Math.round(bgState.y);updatePreview();
+});
+const finishBgDrag=()=>{if(bgDrag){bgDrag=null;saveHistory()}};
+poster.addEventListener('pointerup',finishBgDrag);poster.addEventListener('pointercancel',finishBgDrag);
+['previewHeading','previewBody'].forEach(id=>{
+ const el=$(id),part=id==='previewHeading'?'heading':'body';
+ el.addEventListener('pointerdown',e=>{
+  e.stopPropagation();
+  if(locks[part]){e.preventDefault();return;}
+  selected=part;updatePreview();const p=point(e),box=positions[part],handle=e.target.classList.contains('resize-handle');
+  drag={part,mode:handle?'resize':'move',start:p,origin:{...box}};el.setPointerCapture(e.pointerId);e.preventDefault();
+ });
+ el.addEventListener('pointermove',e=>{
+  if(!drag||drag.part!==part)return;const p=point(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y,box=positions[part];
+  if(drag.mode==='move'){box.x=Math.max(0,Math.min(100-box.w,drag.origin.x+dx));box.y=Math.max(0,Math.min(96,drag.origin.y+dy))}
+  else{box.w=Math.max(20,Math.min(100-box.x,drag.origin.w+dx));if(part==='heading'){$('headingSize').value=Math.max(12,Math.min(80,Number($('headingSize').value)+dy*.7));}
+  else {$('bodySize').value=Math.max(8,Math.min(48,Number($('bodySize').value)+dy*.7));}}
+  updatePreview();
+ });
+ const finish=()=>{if(drag){drag=null;saveHistory()}};
+ el.addEventListener('pointerup',finish);el.addEventListener('pointercancel',finish);
+});
+$('downloadBtn').addEventListener('click',async()=>{
+ if(!window.html2canvas){alert('PNG export library load হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');return}
+ await document.fonts.ready;
+ const h=$('previewHeading'),b=$('previewBody'),old=[h.classList.contains('selected'),b.classList.contains('selected')];
+ h.classList.remove('selected');b.classList.remove('selected');
+ try{
+  const canvas=await html2canvas(poster,{scale:3,useCORS:true,allowTaint:false,backgroundColor:null,width:poster.clientWidth,height:poster.clientHeight,logging:false});
+  const a=document.createElement('a');a.download='bengali-text-poster.png';a.href=canvas.toDataURL('image/png');a.click();
+ }catch(err){alert('PNG তৈরি করা যায়নি। Background image-এর path বা internet connection পরীক্ষা করুন।');}
+ finally{h.classList.toggle('selected',old[0]);b.classList.toggle('selected',old[1])}
+});
+$('resetBtn').addEventListener('click',()=>{
+ $('heading').value='আপনার পোস্টারের শিরোনাম';$('bodyText').value='১) এখানে আপনার প্রথম লেখা লিখুন।\\n\\n২) এখানে দ্বিতীয় লেখা লিখুন।\\n\\n৩) এখানে তৃতীয় লেখা লিখুন।';
+ $('headingSize').value=32;$('bodySize').value=18;$('headingFont').selectedIndex=0;$('bodyFont').selectedIndex=0;
+ $('headingColor').value='#17120b';$('bodyColor').value='#17120b';$('textAlign').value='left';$('ratio').value='9/16';
+ $('paper').value='#ead7a9';$('customColor').value='#ead7a9';$('bgUpload').value='';uploadedBackground='';selectedDefaultBackground='';$('defaultBackground').value='none';
+ styles.heading={bold:true,italic:false,underline:true};styles.body={bold:false,italic:false,underline:false};Object.assign(positions,{heading:{...defaults.heading},body:{...defaults.body}});
+ ['headingBold','headingUnderline'].forEach(id=>$(id).classList.add('active'));['headingItalic','bodyBold','bodyItalic','bodyUnderline'].forEach(id=>$(id).classList.remove('active'));
+ selected=null;updatePreview();saveHistory();
+});
+updateLockButtons();updateBackgroundLock();updatePreview();saveHistory();
+</script>
+</body></html>
