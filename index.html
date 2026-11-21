@@ -19,11 +19,19 @@ input[type=file]{width:100%;font-size:13px}.two{display:grid;grid-template-colum
 button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:700}.download{width:100%;background:#17120b;color:white;font-size:15px}.reset{width:100%;margin-top:8px;background:#eee;color:#222}
 .preview-wrap{background:#ddd;border-radius:24px;padding:22px;display:flex;justify-content:center;overflow:auto}
 .poster{position:relative;width:min(100%,440px);aspect-ratio:9/16;overflow:hidden;color:#17120b;background:#ead7a9;background-size:cover;background-position:center;box-shadow:0 3px 18px #0002;touch-action:none}
-.poster-inner{position:absolute;inset:0;padding:8.5%;overflow:hidden}
+.uploaded-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform:translate(0px,0px) scale(1);transform-origin:center center;pointer-events:none;z-index:0}
+.poster-inner{position:absolute;inset:0;padding:8.5%;overflow:hidden;z-index:1}
 .text-layer{position:absolute;left:8.5%;width:83%;cursor:move;touch-action:none;user-select:none;white-space:pre-wrap;overflow-wrap:anywhere}
 #previewHeading{top:8.5%;margin:0;padding:0 0 9px;border-bottom:2px solid currentColor;text-align:center;font-size:32px;line-height:1.45;font-weight:800}
 #previewBody{top:25%;font-size:18px;line-height:1.9;text-align:left}
 .text-layer.selected{outline:1.5px dashed #1677ff;outline-offset:5px}
+.text-layer.editing{cursor:text;user-select:text;-webkit-user-select:text;touch-action:pan-y;outline:2px solid #16a34a;outline-offset:5px}
+.poster.text-selection-mode{touch-action:auto}
+.poster.background-adjust-mode .text-layer{pointer-events:none}
+.poster.background-adjust-mode{touch-action:none;cursor:grab}
+.poster.background-adjust-mode:active{cursor:grabbing}
+.poster.text-selection-mode .text-layer{user-select:text;-webkit-user-select:text;touch-action:pan-y}
+.text-layer .inline-style{user-select:text;-webkit-user-select:text}
 .resize-handle{display:none;position:absolute;width:14px;height:14px;background:#1677ff;border:2px solid white;border-radius:50%;right:-8px;bottom:-8px;cursor:nwse-resize;touch-action:none}
 .text-layer.selected .resize-handle{display:block}
 .toolbar{display:flex;gap:7px;flex-wrap:wrap}.toggle{background:#f0f0f0;border:1px solid #ccc;color:#222;min-width:42px}.toggle.active{background:#242424;color:white}
@@ -84,6 +92,14 @@ button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:7
   <div class="field"><label for="bodySize">Main Text Size</label><div class="range-row"><input id="bodySize" type="range" min="8" max="48" value="18"><input id="bodySizeNumber" type="number" min="8" max="48" value="18" aria-label="Main text font size in pixels" style="width:76px"></div></div>
   <div class="field"><label for="textAlign">Main Text Alignment</label><select id="textAlign"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option></select></div>
 
+  <div class="section-title">Live Preview Text Editing</div>
+  <div class="field"><label>Preview Text Selection</label><button type="button" id="textSelectMode" class="toggle">Select Text: OFF</button></div>
+  <div class="two">
+   <div class="field"><label for="selectedTextColor">Selected Text Colour</label><input id="selectedTextColor" type="color" value="#17120b"></div>
+   <div class="field"><label for="selectedTextSize">Selected Text Size (px)</label><input id="selectedTextSize" type="number" min="8" max="100" value="20"></div>
+  </div>
+  <button type="button" id="applySelectedTextStyle" class="download">Apply to Selected Text Only</button>
+  <p class="hint">Select Text ON করুন। Preview-তে যে শব্দ বা বাক্য বদলাতে চান সেটি আঙুল/মাউস দিয়ে select করুন। তারপর Colour ও Size ঠিক করে Apply চাপুন। এতে শুধু নির্বাচিত অংশের রং ও সাইজ বদলাবে। সাধারণ Drag/Resize করতে Select Text OFF রাখুন।</p>
   <div class="section-title">Poster Background</div>
   <div class="two"><div class="field"><label for="ratio">Poster Ratio</label><select id="ratio"><option value="9/16">9:16 Shorts</option><option value="3/4">3:4</option><option value="1/1">1:1 Square</option><option value="4/5">4:5</option></select></div><div class="field"><label for="paper">Background Preset</label><select id="paper"><option value="#ead7a9">Vintage Paper</option><option value="#f4e8c9">Light Parchment</option><option value="#fffaf0">Cream</option><option value="#ffffff">White</option><option value="#e8dfcf">Warm Beige</option><option value="#171717">Dark</option></select></div></div>
   <div class="field"><label for="customColor">Custom Background Colour</label><input id="customColor" type="color" value="#ead7a9"></div>
@@ -102,15 +118,13 @@ button{border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:7
   </select></div>
   <div class="section-title">Background Position & Zoom</div>
   <div class="lock-row"><span style="font-size:13px;font-weight:700">Background Movement</span><button type="button" class="bg-lock" id="backgroundLock">🔓 Unlocked</button></div>
-  <div class="field"><label for="bgZoom">Background Zoom: <span id="bgZoomValue">100</span>%</label><div class="range-row"><input id="bgZoom" type="range" min="100" max="300" value="100"><input id="bgZoomNumber" type="number" min="100" max="300" value="100" style="width:76px" aria-label="Background zoom percentage"></div></div>
-  <div class="field"><label for="bgX">Background Horizontal Position: <span id="bgXValue">50</span>%</label><input id="bgX" type="range" min="0" max="100" value="50"></div>
-  <div class="field"><label for="bgY">Background Vertical Position: <span id="bgYValue">50</span>%</label><input id="bgY" type="range" min="0" max="100" value="50"></div>
-  <p class="hint">Background Unlocked থাকলে Live Preview-এর খালি জায়গায় আঙুল বা মাউস দিয়ে Drag করে Background Position পরিবর্তন করুন।</p>
+  <div class="field"><button type="button" class="toggle active" id="backgroundAdjustMode">🖐 Background Adjust: ON</button><p class="hint">Preview-তে Headline বা Main Text-এর ওপর Drag করলে লেখা সরবে। খালি জায়গায় Drag করলে Background সরবে। দুই আঙুলে Pinch করলে Zoom হবে।</p></div>
+  <p class="hint">Background Unlocked এবং Background Adjust ON থাকলে Preview-এর ওপর এক আঙুলে Drag করে Background সরান। দুই আঙুলে Pinch করে Zoom in / Zoom out করুন।</p>
   <div class="field"><label for="bgUpload">Upload Your Own Background</label><input id="bgUpload" type="file" accept="image/*"></div>
   <button class="download" id="downloadBtn">Download Poster PNG</button><button class="reset" id="resetBtn">Reset</button>
 </section>
 <section>
-  <div class="preview-wrap"><div class="poster" id="poster"><div class="poster-inner">
+  <div class="preview-wrap"><div class="poster" id="poster"><img id="uploadedBgImage" class="uploaded-bg" alt="" hidden><div class="poster-inner">
     <h2 class="text-layer" id="previewHeading">কোন দেবতা কাকে বিবাহ করেছিলেন?<span class="resize-handle"></span></h2>
     <div class="text-layer" id="previewBody">
 ১) ব্রহ্মার পত্নী — সরস্বতী।
@@ -140,10 +154,13 @@ loginForm.addEventListener("submit", function(event) {
   }
 });
 
-const $=id=>document.getElementById(id), poster=$('poster');
+const $=id=>document.getElementById(id), poster=$('poster'), uploadedBgImage=$('uploadedBgImage');
 let uploadedBackground='',selectedDefaultBackground='',selected=null;
-const bgState={zoom:100,x:50,y:50,locked:false};
-let bgDrag=null;
+let richText={heading:null,body:null}, textSelectMode=false;
+let savedTextRange=null, backgroundAdjustMode=true;
+const bgState={zoom:100,tx:0,ty:0,locked:false};
+const bgPointers=new Map();
+let bgGesture=null;
 const styles={heading:{bold:true,italic:false,underline:true},body:{bold:false,italic:false,underline:false}};
 const defaults={heading:{x:8.5,y:8.5,w:83},body:{x:8.5,y:25,w:83}};
 const positions={heading:{...defaults.heading},body:{...defaults.body}};
@@ -162,7 +179,7 @@ const defaultBackgrounds={
 };
 let history=[],historyIndex=-1,restoring=false,drag=null;
 function snapshot(){
- const s={heading:$('heading').value,bodyText:$('bodyText').value,headingSize:$('headingSize').value,bodySize:$('bodySize').value,headingFont:$('headingFont').value,bodyFont:$('bodyFont').value,headingColor:$('headingColor').value,bodyColor:$('bodyColor').value,textAlign:$('textAlign').value,ratio:$('ratio').value,customColor:$('customColor').value,paper:$('paper').value,defaultBackground:$('defaultBackground').value,uploadedBackground,selectedDefaultBackground,styles:JSON.parse(JSON.stringify(styles)),positions:JSON.parse(JSON.stringify(positions)),locks:{...locks},bgState:{...bgState}};
+ const s={heading:$('heading').value,bodyText:$('bodyText').value,headingSize:$('headingSize').value,bodySize:$('bodySize').value,headingFont:$('headingFont').value,bodyFont:$('bodyFont').value,headingColor:$('headingColor').value,bodyColor:$('bodyColor').value,textAlign:$('textAlign').value,ratio:$('ratio').value,customColor:$('customColor').value,paper:$('paper').value,defaultBackground:$('defaultBackground').value,uploadedBackground,selectedDefaultBackground,styles:JSON.parse(JSON.stringify(styles)),positions:JSON.parse(JSON.stringify(positions)),locks:{...locks},bgState:{...bgState},richText:{...richText}};
  return JSON.stringify(s);
 }
 function saveHistory(){
@@ -174,7 +191,7 @@ function restore(s){
  restoring=true;const v=JSON.parse(s);
  ['heading','bodyText','headingSize','bodySize','headingFont','bodyFont','headingColor','bodyColor','textAlign','ratio','customColor','paper','defaultBackground'].forEach(k=>$(k).value=v[k]);
  uploadedBackground=v.uploadedBackground;selectedDefaultBackground=v.selectedDefaultBackground;
- Object.assign(styles,v.styles);Object.assign(positions,v.positions);
+ Object.assign(styles,v.styles);Object.assign(positions,v.positions);Object.assign(bgState,v.bgState||{});richText=v.richText||{heading:null,body:null};
  ['headingBold','headingItalic','headingUnderline','bodyBold','bodyItalic','bodyUnderline'].forEach(id=>$(id).classList.toggle('active',styles[id.startsWith('heading')?'heading':'body'][id.replace(/^(heading|body)/,'').toLowerCase()]));
  updatePreview();restoring=false;updateHistoryButtons();
 }
@@ -183,7 +200,21 @@ $('redoBtn').onclick=()=>{if(historyIndex<history.length-1){historyIndex++;resto
 function updateBackgroundLock(){
  const btn=$('backgroundLock');btn.textContent=bgState.locked?'🔒 Locked':'🔓 Unlocked';btn.classList.toggle('locked',bgState.locked);btn.setAttribute('aria-pressed',String(bgState.locked));
 }
-$('backgroundLock').addEventListener('click',()=>{bgState.locked=!bgState.locked;bgDrag=null;updateBackgroundLock();saveHistory()});
+$('backgroundLock').addEventListener('click',()=>{bgState.locked=!bgState.locked;bgGesture=null;bgPointers.clear();updateBackgroundLock();saveHistory()});
+function updateBackgroundAdjustMode(){
+ const btn=$('backgroundAdjustMode');
+ btn.textContent='🖐 Background Adjust: '+(backgroundAdjustMode?'ON':'OFF');
+ btn.classList.toggle('active',backgroundAdjustMode);
+ poster.classList.toggle('background-adjust-mode',backgroundAdjustMode&&!textSelectMode);
+}
+$('backgroundAdjustMode').addEventListener('click',()=>{
+ backgroundAdjustMode=!backgroundAdjustMode;
+ if(backgroundAdjustMode){textSelectMode=false;$('textSelectMode').textContent='Select Text: OFF';$('textSelectMode').classList.remove('active');savedTextRange=null;
+  ['previewHeading','previewBody'].forEach(id=>{const el=$(id);el.contentEditable='false';el.classList.remove('editing')});
+ }
+ updateBackgroundAdjustMode();saveHistory();
+});
+updateBackgroundAdjustMode();
 function updateLockButtons(){
  ['heading','body'].forEach(part=>{
   const btn=$(part==='heading'?'headingLock':'bodyLock');
@@ -201,8 +232,14 @@ $('headingLock').addEventListener('click',()=>toggleLock('heading'));
 $('bodyLock').addEventListener('click',()=>toggleLock('body'));
 function updatePreview(syncSizeInputs=true){
  const h=$('previewHeading'),b=$('previewBody');
- h.firstChild ? h.firstChild.textContent=$('heading').value||'আপনার শিরোনাম' : h.textContent=$('heading').value;
- b.firstChild ? b.firstChild.textContent=$('bodyText').value||'আপনার মূল লেখা লিখুন' : b.textContent=$('bodyText').value;
+ const sourceHeading=$('heading').value||'আপনার শিরোনাম';
+ const sourceBody=$('bodyText').value||'আপনার মূল লেখা লিখুন';
+ const currentHeading=h.textContent.replace(/\u200b/g,'').replace(/\s*$/,'');
+ const currentBody=b.textContent.replace(/\u200b/g,'').replace(/\s*$/,'');
+ if(!richText.heading || currentHeading!==sourceHeading){h.textContent=sourceHeading;richText.heading=null;}
+ else if(h.innerHTML!==richText.heading)h.innerHTML=richText.heading;
+ if(!richText.body || currentBody!==sourceBody){b.textContent=sourceBody;richText.body=null;}
+ else if(b.innerHTML!==richText.body)b.innerHTML=richText.body;
  h.style.fontSize=$('headingSize').value+'px';b.style.fontSize=$('bodySize').value+'px';
  if(syncSizeInputs){
   $('headingSizeNumber').value=$('headingSize').value;
@@ -214,33 +251,97 @@ function updatePreview(syncSizeInputs=true){
  h.style.fontStyle=styles.heading.italic?'italic':'normal';b.style.fontStyle=styles.body.italic?'italic':'normal';
  h.style.textDecoration=styles.heading.underline?'underline':'none';b.style.textDecoration=styles.body.underline?'underline':'none';
  b.style.textAlign=$('textAlign').value;poster.style.aspectRatio=$('ratio').value;poster.style.backgroundColor=$('customColor').value;
- const bg=uploadedBackground || (selectedDefaultBackground ? defaultBackgrounds[selectedDefaultBackground] : '');
- poster.style.backgroundImage=bg||'none';
- poster.style.backgroundSize=bgState.zoom+'% auto';
- poster.style.backgroundPosition=bgState.x+'% '+bgState.y+'%';
- $('bgZoomValue').textContent=$('bgZoomNumber').value=bgState.zoom;
- $('bgXValue').textContent=bgState.x;$('bgYValue').textContent=bgState.y;
+ const bg=selectedDefaultBackground ? defaultBackgrounds[selectedDefaultBackground] : '';
+ // Uploaded files use an IMG layer so local data URLs render reliably.
+ const bgTransform='translate('+bgState.tx+'px,'+bgState.ty+'px) scale('+(bgState.zoom/100)+')';
+ if(uploadedBackground){
+  if(uploadedBgImage.src!==uploadedBackground)uploadedBgImage.src=uploadedBackground;
+  uploadedBgImage.hidden=false;
+  uploadedBgImage.style.transform=bgTransform;
+  poster.style.backgroundImage='none';
+ }else{
+  uploadedBgImage.hidden=true;
+  uploadedBgImage.removeAttribute('src');
+  poster.style.backgroundImage=bg||'none';
+  poster.style.backgroundSize=(bgState.zoom)+'% auto';
+  poster.style.backgroundPosition='calc(50% + '+bgState.tx+'px) calc(50% + '+bgState.ty+'px)';
+ }
  [h,b].forEach((el,i)=>{const p=positions[i?'body':'heading'];el.style.left=p.x+'%';el.style.top=p.y+'%';el.style.width=p.w+'%';});
- h.querySelector('.resize-handle')||h.insertAdjacentHTML('beforeend','<span class="resize-handle"></span>');
- b.querySelector('.resize-handle')||b.insertAdjacentHTML('beforeend','<span class="resize-handle"></span>');
+ h.querySelector('.resize-handle')||h.insertAdjacentHTML('beforeend','<span class="resize-handle" contenteditable="false"></span>');
+ b.querySelector('.resize-handle')||b.insertAdjacentHTML('beforeend','<span class="resize-handle" contenteditable="false"></span>');
  h.classList.toggle('selected',selected==='heading');b.classList.toggle('selected',selected==='body');
 }
 function bindToggle(id,part,prop){$(id).addEventListener('click',()=>{styles[part][prop]=!styles[part][prop];$(id).classList.toggle('active',styles[part][prop]);updatePreview();saveHistory()})}
 bindToggle('headingBold','heading','bold');bindToggle('headingItalic','heading','italic');bindToggle('headingUnderline','heading','underline');
 bindToggle('bodyBold','body','bold');bindToggle('bodyItalic','body','italic');bindToggle('bodyUnderline','body','underline');
 ['heading','bodyText','headingSize','bodySize','headingFont','bodyFont','headingColor','bodyColor','textAlign','ratio','customColor'].forEach(id=>$(id).addEventListener('input',()=>{updatePreview();saveHistory()}));
-['bgZoom','bgX','bgY'].forEach(id=>$(id).addEventListener('input',()=>{
- bgState.zoom=Number($('bgZoom').value);bgState.x=Number($('bgX').value);bgState.y=Number($('bgY').value);
- updatePreview();saveHistory();
-}));
-$('bgZoomNumber').addEventListener('input',()=>{
- const v=Number($('bgZoomNumber').value);if(!Number.isFinite(v)||v<100||v>300)return;
- bgState.zoom=v;$('bgZoom').value=v;updatePreview();saveHistory();
+
+$('textSelectMode').addEventListener('click',()=>{
+ textSelectMode=!textSelectMode;
+ $('textSelectMode').textContent='Select Text: '+(textSelectMode?'ON':'OFF');
+ $('textSelectMode').classList.toggle('active',textSelectMode);
+ $('poster').classList.toggle('text-selection-mode',textSelectMode);
+ $('poster').style.touchAction=textSelectMode?'auto':'none';
+ $('poster').classList.toggle('background-adjust-mode',backgroundAdjustMode&&!textSelectMode);
+ if(textSelectMode){backgroundAdjustMode=false;updateBackgroundAdjustMode();}
+ if(!textSelectMode)savedTextRange=null;
+ if(!textSelectMode)updateBackgroundAdjustMode();
+ ['previewHeading','previewBody'].forEach(id=>{
+  const el=$(id);
+  el.contentEditable=textSelectMode?'true':'false';
+  el.classList.toggle('editing',textSelectMode);
+ });
+ if(!textSelectMode){
+  ['previewHeading','previewBody'].forEach((id,i)=>{
+   const part=i?'body':'heading',el=$(id),copy=el.cloneNode(true),handle=copy.querySelector('.resize-handle');
+   if(handle)handle.remove();
+   $(part==='heading'?'heading':'bodyText').value=copy.textContent;
+   richText[part]=el.innerHTML;
+  });
+  saveHistory();
+ }
 });
-$('bgZoomNumber').addEventListener('change',()=>{
- bgState.zoom=Math.max(100,Math.min(300,Math.round(Number($('bgZoomNumber').value)||100)));
- $('bgZoom').value=bgState.zoom;updatePreview();saveHistory();
+document.addEventListener('selectionchange',()=>{
+ if(!textSelectMode)return;
+ const sel=window.getSelection();
+ if(!sel||sel.rangeCount===0||sel.isCollapsed)return;
+ const r=sel.getRangeAt(0);
+ const start=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;
+ const end=r.endContainer.nodeType===1?r.endContainer:r.endContainer.parentElement;
+ const a=start&&start.closest('.text-layer');
+ const b=end&&end.closest('.text-layer');
+ if(a&&a===b&&$('poster').contains(a))savedTextRange=r.cloneRange();
 });
+$('applySelectedTextStyle').addEventListener('click',()=>{
+ const sel=window.getSelection();
+ if(savedTextRange){
+  try{sel.removeAllRanges();sel.addRange(savedTextRange.cloneRange());}catch(e){}
+ }
+ if(!sel||sel.rangeCount===0||sel.isCollapsed){alert('আগে Select Text ON করে Preview-তে কিছু লেখা select করুন।');return;}
+ const range=sel.getRangeAt(0);
+ const host=range.commonAncestorContainer.nodeType===1?range.commonAncestorContainer:range.commonAncestorContainer.parentElement;
+ const layer=host&&host.closest('.text-layer');
+ if(!layer||!$('poster').contains(layer)){alert('Preview-এর Heading বা Main Text থেকে লেখা select করুন।');return;}
+ const span=document.createElement('span');
+ span.className='inline-style';
+ span.style.color=$('selectedTextColor').value;
+ const size=Math.max(8,Math.min(100,Number($('selectedTextSize').value)||20));
+ span.style.fontSize=size+'px';
+ try{
+  span.appendChild(range.extractContents());
+  range.insertNode(span);
+  sel.removeAllRanges();
+  const part=layer.id==='previewHeading'?'heading':'body';
+  const copy=layer.cloneNode(true),handle=copy.querySelector('.resize-handle');
+  if(handle)handle.remove();
+  $(part==='heading'?'heading':'bodyText').value=copy.textContent;
+  richText[part]=layer.innerHTML;
+  savedTextRange=null;
+  sel.removeAllRanges();
+  saveHistory();
+ }catch(err){alert('এই selection-এ style প্রয়োগ করা যায়নি। আবার শব্দ/বাক্য select করে চেষ্টা করুন।');}
+});
+
 // Number fields: allow multi-digit typing without resetting the field after each keystroke.
 function bindSizeNumber(numberId,sliderId,min,max){
  const number=$(numberId),slider=$(sliderId);
@@ -269,38 +370,151 @@ $('paper').addEventListener('change',()=>{$('customColor').value=$('paper').valu
 $('customColor').addEventListener('input',()=>{uploadedBackground='';selectedDefaultBackground='';$('defaultBackground').value='none';updatePreview();saveHistory()});
 $('defaultBackground').addEventListener('change',()=>{selectedDefaultBackground=$('defaultBackground').value==='none'?'':$('defaultBackground').value;uploadedBackground='';$('bgUpload').value='';updatePreview();saveHistory()});
 $('bgUpload').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{uploadedBackground=ev.target.result;selectedDefaultBackground='';$('defaultBackground').value='none';updatePreview();saveHistory()};r.readAsDataURL(f)});
-function point(e){const r=poster.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100}}
+function point(e){
+ const r=poster.getBoundingClientRect();
+ return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+function getBgGesturePoints(){
+ return Array.from(bgPointers.values());
+}
+function beginBgGesture(){
+ const pts=getBgGesturePoints();
+ if(!pts.length)return;
+ if(pts.length===1){
+  bgGesture={mode:'pan',start:pts[0],tx:bgState.tx,ty:bgState.ty};
+ }else{
+  const a=pts[0],b=pts[1];
+  bgGesture={
+   mode:'pinch',
+   distance:Math.max(1,Math.hypot(b.x-a.x,b.y-a.y)),
+   zoom:bgState.zoom,
+   tx:bgState.tx,ty:bgState.ty,
+   center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}
+  };
+ }
+}
 poster.addEventListener('pointerdown',e=>{
- if(bgState.locked||e.target.closest('.text-layer'))return;
- const p=point(e);bgDrag={start:p,origin:{x:bgState.x,y:bgState.y}};
- poster.setPointerCapture(e.pointerId);e.preventDefault();
+ if(bgState.locked||textSelectMode||!backgroundAdjustMode||e.target.closest('.text-layer'))return;
+ bgPointers.set(e.pointerId,point(e));
+ try{poster.setPointerCapture(e.pointerId)}catch(err){}
+ beginBgGesture();
+ e.preventDefault();
 });
 poster.addEventListener('pointermove',e=>{
- if(!bgDrag)return;const p=point(e);
- bgState.x=Math.max(0,Math.min(100,bgDrag.origin.x-(p.x-bgDrag.start.x)*1.5));
- bgState.y=Math.max(0,Math.min(100,bgDrag.origin.y-(p.y-bgDrag.start.y)*1.5));
- $('bgX').value=Math.round(bgState.x);$('bgY').value=Math.round(bgState.y);updatePreview();
+ if(!bgPointers.has(e.pointerId)||!bgGesture)return;
+ bgPointers.set(e.pointerId,point(e));
+ const pts=getBgGesturePoints();
+ if(pts.length===1&&bgGesture.mode==='pan'){
+  const p=pts[0];
+  bgState.tx=bgGesture.tx+(p.x-bgGesture.start.x);
+  bgState.ty=bgGesture.ty+(p.y-bgGesture.start.y);
+ }else if(pts.length>=2){
+  const a=pts[0],b=pts[1];
+  const distance=Math.max(1,Math.hypot(b.x-a.x,b.y-a.y));
+  const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+  const ratio=distance/bgGesture.distance;
+  bgState.zoom=Math.max(100,Math.min(500,Math.round(bgGesture.zoom*ratio)));
+  bgState.tx=bgGesture.tx+(center.x-bgGesture.center.x);
+  bgState.ty=bgGesture.ty+(center.y-bgGesture.center.y);
+ }
+ updatePreview();
+ e.preventDefault();
 });
-const finishBgDrag=()=>{if(bgDrag){bgDrag=null;saveHistory()}};
-poster.addEventListener('pointerup',finishBgDrag);poster.addEventListener('pointercancel',finishBgDrag);
+function finishBgPointer(e){
+ if(!bgPointers.has(e.pointerId))return;
+ bgPointers.delete(e.pointerId);
+ if(bgPointers.size){
+  beginBgGesture();
+ }else{
+  bgGesture=null;
+  saveHistory();
+ }
+}
+poster.addEventListener('pointerup',finishBgPointer);
+poster.addEventListener('pointercancel',finishBgPointer);
+poster.addEventListener('lostpointercapture',finishBgPointer);
 ['previewHeading','previewBody'].forEach(id=>{
  const el=$(id),part=id==='previewHeading'?'heading':'body';
  el.addEventListener('pointerdown',e=>{
+  if(textSelectMode)return;
   e.stopPropagation();
-  if(locks[part]){e.preventDefault();return;}
-  selected=part;updatePreview();const p=point(e),box=positions[part],handle=e.target.classList.contains('resize-handle');
-  drag={part,mode:handle?'resize':'move',start:p,origin:{...box}};el.setPointerCapture(e.pointerId);e.preventDefault();
- });
- el.addEventListener('pointermove',e=>{
-  if(!drag||drag.part!==part)return;const p=point(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y,box=positions[part];
-  if(drag.mode==='move'){box.x=Math.max(0,Math.min(100-box.w,drag.origin.x+dx));box.y=Math.max(0,Math.min(96,drag.origin.y+dy))}
-  else{box.w=Math.max(20,Math.min(100-box.x,drag.origin.w+dx));if(part==='heading'){$('headingSize').value=Math.max(12,Math.min(80,Number($('headingSize').value)+dy*.7));}
-  else {$('bodySize').value=Math.max(8,Math.min(48,Number($('bodySize').value)+dy*.7));}}
+  selected=part;
+  $('selectedTextColor').value=$(part==='heading'?'headingColor':'bodyColor').value;
+  if(textSelectMode){
+   if(locks[part])return;
+   el.contentEditable='true';
+   el.classList.add('editing');
+   return;
+  }
+  if(el.isContentEditable){el.contentEditable='false';el.classList.remove('editing');}
+  if(locks[part]){e.preventDefault();updatePreview();return;}
   updatePreview();
+  const p=point(e),box=positions[part],handle=e.target.classList.contains('resize-handle');
+  drag={part,pointerId:e.pointerId,mode:handle?'resize':'move',start:p,origin:{...box}};
+  try{poster.setPointerCapture(e.pointerId)}catch(err){}
+  e.preventDefault();
  });
- const finish=()=>{if(drag){drag=null;saveHistory()}};
- el.addEventListener('pointerup',finish);el.addEventListener('pointercancel',finish);
+ el.addEventListener('dblclick',e=>{
+  e.stopPropagation();
+  if(locks[part])return;
+  selected=part;
+  const handle=el.querySelector('.resize-handle');
+  if(handle)handle.contentEditable='false';
+  el.contentEditable='true';
+  el.classList.add('editing');
+  $('selectedTextColor').value=$(part==='heading'?'headingColor':'bodyColor').value;
+  el.focus();
+ });
+ el.addEventListener('input',()=>{
+  if(!el.isContentEditable)return;
+  const copy=el.cloneNode(true);
+  const handle=copy.querySelector('.resize-handle');
+  if(handle)handle.remove();
+  $(part==='heading'?'heading':'bodyText').value=copy.textContent;
+  richText[part]=el.innerHTML;
+ });
+ el.addEventListener('blur',()=>{
+  if(!el.isContentEditable)return;
+  const copy=el.cloneNode(true);
+  const handle=copy.querySelector('.resize-handle');
+  if(handle)handle.remove();
+  $(part==='heading'?'heading':'bodyText').value=copy.textContent;
+  richText[part]=el.innerHTML;
+  el.contentEditable='false';
+  el.classList.remove('editing');
+  updatePreview();
+  saveHistory();
+ });
+
 });
+poster.addEventListener('pointermove',e=>{
+ if(!drag||drag.pointerId!==e.pointerId)return;
+ const p=point(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y;
+ const box=positions[drag.part];
+ const posterWidth=poster.clientWidth||1,posterHeight=poster.clientHeight||1;
+ const dxPercent=dx/posterWidth*100,dyPercent=dy/posterHeight*100;
+ if(drag.mode==='move'){
+  const layer=$(drag.part==='heading'?'previewHeading':'previewBody');
+  const layerHeightPercent=(layer.offsetHeight/posterHeight)*100;
+  const maxX=Math.max(0,100-box.w);
+  const maxY=Math.max(0,100-layerHeightPercent);
+  box.x=Math.max(0,Math.min(maxX,drag.origin.x+dxPercent));
+  box.y=Math.max(0,Math.min(maxY,drag.origin.y+dyPercent));
+ }else{
+  box.w=Math.max(20,Math.min(100-box.x,drag.origin.w+dxPercent));
+  const sizeId=drag.part==='heading'?'headingSize':'bodySize';
+  const min=drag.part==='heading'?12:8,max=drag.part==='heading'?80:48;
+  $(sizeId).value=Math.max(min,Math.min(max,Number($(sizeId).value)+dy*.7));
+ }
+ updatePreview();
+ e.preventDefault();
+});
+function finishTextDrag(e){
+ if(drag&&drag.pointerId===e.pointerId){drag=null;saveHistory();}
+}
+poster.addEventListener('pointerup',finishTextDrag);
+poster.addEventListener('pointercancel',finishTextDrag);
+poster.addEventListener('lostpointercapture',finishTextDrag);
 $('downloadBtn').addEventListener('click',async()=>{
  if(!window.html2canvas){alert('PNG export library load হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');return}
  await document.fonts.ready;
@@ -319,6 +533,8 @@ $('resetBtn').addEventListener('click',()=>{
  $('paper').value='#ead7a9';$('customColor').value='#ead7a9';$('bgUpload').value='';uploadedBackground='';selectedDefaultBackground='';$('defaultBackground').value='none';
  styles.heading={bold:true,italic:false,underline:true};styles.body={bold:false,italic:false,underline:false};Object.assign(positions,{heading:{...defaults.heading},body:{...defaults.body}});
  ['headingBold','headingUnderline'].forEach(id=>$(id).classList.add('active'));['headingItalic','bodyBold','bodyItalic','bodyUnderline'].forEach(id=>$(id).classList.remove('active'));
+ richText={heading:null,body:null};bgState.zoom=100;bgState.tx=0;bgState.ty=0;textSelectMode=false;$('textSelectMode').textContent='Select Text: OFF';$('textSelectMode').classList.remove('active');
+ ['previewHeading','previewBody'].forEach(id=>{const el=$(id);el.contentEditable='false';el.classList.remove('editing')});
  selected=null;updatePreview();saveHistory();
 });
 updateLockButtons();updateBackgroundLock();updatePreview();saveHistory();
